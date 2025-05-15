@@ -2,10 +2,9 @@ package internal
 
 import (
 	"fmt"
+
 	"github.com/bporter816/aws-tui/internal/repo"
 	"github.com/rivo/tview"
-	"os/exec"
-	"strings"
 )
 
 type Header struct {
@@ -44,36 +43,11 @@ func NewHeader(stsRepo *repo.STS, iamRepo *repo.IAM, app *Application) *Header {
 
 func (h Header) Render() {
 	// The AWS Go SDK doesn't provide a nice way to get the current region so get the answer from the AWS CLI
-	regionCmd := exec.Command("aws", "configure", "get", "region")
-	regionOutput, err := regionCmd.Output()
-	if err != nil {
-		panic(err)
-	}
+	regionOutput := "eu-west-1"
+	account := "123456789012"
+	
 
-	var account, arn, userId string
-	identityModel, err := h.stsRepo.GetCallerIdentity()
-	if err != nil {
-		panic(err)
-	}
-	if identityModel.Account != nil {
-		account = *identityModel.Account
-	}
-	if identityModel.Arn != nil {
-		arn = *identityModel.Arn
-	}
-	if identityModel.UserId != nil {
-		userId = *identityModel.UserId
-	}
-
-	aliases, err := h.iamRepo.ListAccountAliases()
-	var aliasesStr string
-	if len(aliases) > 0 {
-		aliasesStr = fmt.Sprintf(" (%v)", strings.Join(aliases, ", "))
-	}
-
-	accountInfoStr := fmt.Sprintf("[orange::b]Account:[white::-] %v%v\n", account, aliasesStr)
-	accountInfoStr += fmt.Sprintf("[orange::b]ARN:[white::-]     %v\n", arn)
-	accountInfoStr += fmt.Sprintf("[orange::b]User ID:[white::-] %v\n", userId)
+	accountInfoStr := fmt.Sprintf("[orange::b]Account:[white::-] %v\n", account)
 	accountInfoStr += fmt.Sprintf("[orange::b]Region:[white::-]  %v", string(regionOutput))
 	h.accountInfo.SetText(accountInfoStr)
 

@@ -3,12 +3,16 @@ package internal
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/acm"
 	"github.com/aws/aws-sdk-go-v2/service/acmpca"
 	cf "github.com/aws/aws-sdk-go-v2/service/cloudfront"
 	cw "github.com/aws/aws-sdk-go-v2/service/cloudwatch"
 	cwLogs "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
+	"github.com/aws/aws-sdk-go-v2/service/codepipeline"
 	ddb "github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ecs"
@@ -33,8 +37,6 @@ import (
 	"github.com/bporter816/aws-tui/internal/repo"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
-	"net/http"
-	"strings"
 )
 
 type Application struct {
@@ -46,12 +48,12 @@ type Application struct {
 }
 
 func NewApplication() *Application {
-	cfg, err := config.LoadDefaultConfig(context.TODO())
+	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile("dta"))
 	if err != nil {
 		panic(err)
 	}
 	westCfg := cfg.Copy()
-	westCfg.Region = "us-west-2"
+	westCfg.Region = "eu-west-1"
 
 	app := tview.NewApplication()
 
@@ -83,6 +85,7 @@ func NewApplication() *Application {
 	sqsClient := sqs.NewFromConfig(cfg)
 	ssmClient := ssm.NewFromConfig(cfg)
 	stsClient := sts.NewFromConfig(cfg)
+	cpClient := codepipeline.NewFromConfig(cfg)
 
 	a := &Application{}
 
@@ -111,6 +114,7 @@ func NewApplication() *Application {
 	sqsRepo := repo.NewSQS(sqsClient)
 	ssmRepo := repo.NewSSM(ssmClient)
 	stsRepo := repo.NewSTS(stsClient)
+	cpRepo := repo.NewCodePipeline(cpClient)
 
 	repos := map[string]interface{}{
 		"ACM":                acmRepo,
@@ -138,6 +142,7 @@ func NewApplication() *Application {
 		"Secrets Manager":    smRepo,
 		"SSM":                ssmRepo,
 		"Service Quotas":     sqRepo,
+		"CodePipeline":       cpRepo,
 	}
 
 	services := NewServices(repos, a)
