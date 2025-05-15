@@ -9,18 +9,18 @@ import (
 )
 
 type CodePipeline struct {
-	cpClient *codepipeline.Client
+	CpClient *codepipeline.Client
 }
 
 func NewCodePipeline(cpClient *codepipeline.Client) *CodePipeline {
 	return &CodePipeline{
-		cpClient: cpClient,
+		CpClient: cpClient,
 	}
 }
 
 func (c CodePipeline) ListPipelines() ([]model.CodePipelineSummary, error) {
 	pg := codepipeline.NewListPipelinesPaginator(
-		c.cpClient,
+		c.CpClient,
 		&codepipeline.ListPipelinesInput{},
 	)
 	var pipelines []model.CodePipelineSummary
@@ -37,7 +37,7 @@ func (c CodePipeline) ListPipelines() ([]model.CodePipelineSummary, error) {
 }
 
 func (c CodePipeline) GetPipeline(name string) (*codepipeline.GetPipelineOutput, error) {
-	return c.cpClient.GetPipeline(
+	return c.CpClient.GetPipeline(
 		context.TODO(),
 		&codepipeline.GetPipelineInput{
 			Name: aws.String(name),
@@ -46,7 +46,7 @@ func (c CodePipeline) GetPipeline(name string) (*codepipeline.GetPipelineOutput,
 }
 
 func (c CodePipeline) ListTags(resourceArn string) (model.Tags, error) {
-	out, err := c.cpClient.ListTagsForResource(
+	out, err := c.CpClient.ListTagsForResource(
 		context.TODO(),
 		&codepipeline.ListTagsForResourceInput{
 			ResourceArn: aws.String(resourceArn),

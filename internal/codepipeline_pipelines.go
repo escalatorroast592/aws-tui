@@ -28,6 +28,18 @@ func NewCodePipelinePipelines(repo *repo.CodePipeline, app *Application) *CodePi
 	}
 }
 
+func (c *CodePipelinePipelines) selectHandler(row, col int) {
+	if row <= 0 || row > len(c.model) {
+		return
+	}
+	pipeline := c.model[row-1]
+	if pipeline.Name == nil {
+		return
+	}
+	detailsView := NewCodePipelineDetails(c.repo, *pipeline.Name, c.app)
+	c.app.AddAndSwitch(detailsView)
+}
+
 func (c *CodePipelinePipelines) Render() {
 	// Set up logging to file
 	logFile, err := os.OpenFile("codepipeline_pipelines.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
@@ -55,6 +67,7 @@ func (c *CodePipelinePipelines) Render() {
 	}
 
 	c.SetData(data)
+	c.SetSelectedFunc(c.selectHandler)
 }
 
 func (c *CodePipelinePipelines) GetLabels() []string     { return []string{"Pipelines"} }
