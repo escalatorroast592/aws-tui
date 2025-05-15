@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/codebuild"
 	"github.com/bporter816/aws-tui/internal/repo"
 	"github.com/bporter816/aws-tui/internal/ui"
+	"github.com/gdamore/tcell/v2"
 )
 
 type CodeBuildLogsView struct {
@@ -29,6 +30,19 @@ func NewCodeBuildLogsView(repo *repo.CodePipeline, pipelineName, stageName, acti
 		actionName:   actionName,
 		app:         app,
 	}
+	// Increase scroll speed: PageDown/PageUp scroll 10 lines at a time
+	view.Text.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		row, col := view.Text.GetScrollOffset()
+		switch event.Key() {
+		case tcell.KeyPgDn:
+			view.Text.ScrollTo(row+50, col)
+			return nil
+		case tcell.KeyPgUp:
+			view.Text.ScrollTo(row-50, col)
+			return nil
+		}
+		return event
+	})
 	view.SetText(fmt.Sprintf("Logs for %s / %s / %s\n(implement log fetching here)", pipelineName, stageName, actionName))
 	return view
 }
