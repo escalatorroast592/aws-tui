@@ -84,6 +84,17 @@ func (d *CodePipelineDetails) Render() {
 			default:
 				actionNode.SetColor(tview.Styles.PrimaryTextColor)
 			}
+
+			// Attach a select handler to fetch logs for CodeBuild actions
+			if string(action.ActionTypeId.Category) == "Build" && action.ActionTypeId.Provider != nil && *action.ActionTypeId.Provider == "CodeBuild" {
+				actionName := *action.Name
+				stageName := *stage.Name
+				actionNode.SetSelectedFunc(func() {
+					logsView := NewCodeBuildLogsView(d.repo, d.name, stageName, actionName, d.app)
+					d.app.AddAndSwitch(logsView)
+				})
+			}
+
 			stageNode.AddChild(actionNode)
 		}
 		root.AddChild(stageNode)

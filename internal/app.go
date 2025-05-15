@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/acm"
 	"github.com/aws/aws-sdk-go-v2/service/acmpca"
@@ -45,6 +46,7 @@ type Application struct {
 	header     *Header
 	footer     *Footer
 	components []Component
+	awsConfig  aws.Config
 }
 
 func NewApplication() *Application {
@@ -88,6 +90,7 @@ func NewApplication() *Application {
 	cpClient := codepipeline.NewFromConfig(cfg)
 
 	a := &Application{}
+	a.awsConfig = cfg
 
 	acmRepo := repo.NewACM(acmClient)
 	acmPCARepo := repo.NewACMPCA(acmPCAClient)
@@ -238,4 +241,8 @@ func (a *Application) Close() {
 
 func (a Application) Run() error {
 	return a.app.Run()
+}
+
+func (a *Application) GetAWSConfig() aws.Config {
+	return a.awsConfig
 }
